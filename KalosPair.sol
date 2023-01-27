@@ -86,7 +86,7 @@ contract KalosPair is IKalosPair, KalosERC20 {
         emit Sync(reserve0, reserve1);
     }
 
-    // if fee is on, mint liquidity equivalent to 8/25 of the growth in sqrt(k)
+    // if fee is on, mint liquidity equivalent to 1/6 of the growth in sqrt(k)
     function _mintFee(uint112 _reserve0, uint112 _reserve1) private returns (bool feeOn) {
         address feeTo = IKalosFactory(factory).feeTo();
         feeOn = feeTo != address(0);
@@ -96,8 +96,8 @@ contract KalosPair is IKalosPair, KalosERC20 {
                 uint rootK = Math.sqrt(uint(_reserve0).mul(_reserve1));
                 uint rootKLast = Math.sqrt(_kLast);
                 if (rootK > rootKLast) {
-                    uint numerator = totalSupply.mul(rootK.sub(rootKLast)).mul(8);
-                    uint denominator = rootK.mul(17).add(rootKLast.mul(8));
+                    uint numerator = totalSupply.mul(rootK.sub(rootKLast));
+                    uint denominator = rootK.mul(5).add(rootKLast);
                     uint liquidity = numerator / denominator;
                     if (liquidity > 0) _mint(feeTo, liquidity);
                 }
@@ -170,7 +170,7 @@ contract KalosPair is IKalosPair, KalosERC20 {
         require(to != _token0 && to != _token1, 'Kalos: INVALID_TO');
         if (amount0Out > 0) _safeTransfer(_token0, to, amount0Out); // optimistically transfer tokens
         if (amount1Out > 0) _safeTransfer(_token1, to, amount1Out); // optimistically transfer tokens
-        if (data.length > 0) IKalosCallee(to).pancakeCall(msg.sender, amount0Out, amount1Out, data);
+        if (data.length > 0) IKalosCallee(to).xaloCall(msg.sender, amount0Out, amount1Out, data);
         balance0 = IERC20(_token0).balanceOf(address(this));
         balance1 = IERC20(_token1).balanceOf(address(this));
         }
@@ -178,8 +178,8 @@ contract KalosPair is IKalosPair, KalosERC20 {
         uint amount1In = balance1 > _reserve1 - amount1Out ? balance1 - (_reserve1 - amount1Out) : 0;
         require(amount0In > 0 || amount1In > 0, 'Kalos: INSUFFICIENT_INPUT_AMOUNT');
         { // scope for reserve{0,1}Adjusted, avoids stack too deep errors
-        uint balance0Adjusted = (balance0.mul(10000).sub(amount0In.mul(25)));
-        uint balance1Adjusted = (balance1.mul(10000).sub(amount1In.mul(25)));
+        uint balance0Adjusted = (balance0.mul(10000).sub(amount0In.mul(30)));
+        uint balance1Adjusted = (balance1.mul(10000).sub(amount1In.mul(30)));
         require(balance0Adjusted.mul(balance1Adjusted) >= uint(_reserve0).mul(_reserve1).mul(10000**2), 'Kalos: K');
         }
 

@@ -22,7 +22,7 @@ contract KalosZapV1 is Ownable, ReentrancyGuard {
     IWETH public WBNB;
 
     // KalosRouter interface
-    IKalosRouter02 public pancakeRouter;
+    IKalosRouter02 public kalosRouter;
 
     // Maximum integer (used for managing allowance)
     uint256 public constant MAX_INT = 2**256 - 1;
@@ -34,7 +34,7 @@ contract KalosZapV1 is Ownable, ReentrancyGuard {
     uint256 public maxZapReverseRatio;
 
     // Address KalosRouter
-    address private pancakeRouterAddress;
+    address private kalosRouterAddress;
 
     // Address Wrapped BNB (WBNB)
     address private WBNBAddress;
@@ -84,25 +84,25 @@ contract KalosZapV1 is Ownable, ReentrancyGuard {
     /*
      * @notice Constructor
      * @param _WBNBAddress: address of the WBNB contract
-     * @param _pancakeRouter: address of the KalosRouter
+     * @param _kalosRouter: address of the KalosRouter
      * @param _maxZapReverseRatio: maximum zap ratio
      */
     constructor(
         address _WBNBAddress,
-        address _pancakeRouter,
+        address _kalosRouter,
         uint256 _maxZapReverseRatio
     ) {
         WBNBAddress = _WBNBAddress;
         WBNB = IWETH(_WBNBAddress);
-        pancakeRouterAddress = _pancakeRouter;
-        pancakeRouter = IKalosRouter02(_pancakeRouter);
+        kalosRouterAddress = _kalosRouter;
+        kalosRouter = IKalosRouter02(_kalosRouter);
         maxZapReverseRatio = _maxZapReverseRatio;
     }
 
     /*
      * @notice Zap BNB in a WBNB pool (e.g. WBNB/token)
-     * @param _lpToken: LP token address (e.g. CAKE/BNB)
-     * @param _tokenAmountOutMin: minimum token amount (e.g. CAKE) to receive in the intermediary swap (e.g. BNB --> CAKE)
+     * @param _lpToken: LP token address (e.g. XALO/BNB)
+     * @param _tokenAmountOutMin: minimum token amount (e.g. XALO) to receive in the intermediary swap (e.g. BNB --> XALO)
      */
     function zapInBNB(address _lpToken, uint256 _tokenAmountOutMin) external payable nonReentrant {
         WBNB.deposit{value: msg.value}();
@@ -124,8 +124,8 @@ contract KalosZapV1 is Ownable, ReentrancyGuard {
      * @notice Zap a token in (e.g. token/other token)
      * @param _tokenToZap: token to zap
      * @param _tokenAmountIn: amount of token to swap
-     * @param _lpToken: LP token address (e.g. CAKE/BUSD)
-     * @param _tokenAmountOutMin: minimum token to receive (e.g. CAKE) in the intermediary swap (e.g. BUSD --> CAKE)
+     * @param _lpToken: LP token address (e.g. XALO/BUSD)
+     * @param _tokenAmountOutMin: minimum token to receive (e.g. XALO) in the intermediary swap (e.g. BUSD --> XALO)
      */
     function zapInToken(
         address _tokenToZap,
@@ -239,9 +239,9 @@ contract KalosZapV1 is Ownable, ReentrancyGuard {
 
     /*
      * @notice Zap a LP token out to receive BNB
-     * @param _lpToken: LP token address (e.g. CAKE/WBNB)
+     * @param _lpToken: LP token address (e.g. XALO/WBNB)
      * @param _lpTokenAmount: amount of LP tokens to zap out
-     * @param _tokenAmountOutMin: minimum amount to receive (in BNB/WBNB) in the intermediary swap (e.g. CAKE --> BNB)
+     * @param _tokenAmountOutMin: minimum amount to receive (in BNB/WBNB) in the intermediary swap (e.g. XALO --> BNB)
      */
     function zapOutBNB(
         address _lpToken,
@@ -273,10 +273,10 @@ contract KalosZapV1 is Ownable, ReentrancyGuard {
 
     /*
      * @notice Zap a LP token out (to receive a token)
-     * @param _lpToken: LP token address (e.g. CAKE/BUSD)
-     * @param _tokenToReceive: one of the 2 tokens from the LP (e.g. CAKE or BUSD)
+     * @param _lpToken: LP token address (e.g. XALO/BUSD)
+     * @param _tokenToReceive: one of the 2 tokens from the LP (e.g. XALO or BUSD)
      * @param _lpTokenAmount: amount of LP tokens to zap out
-     * @param _tokenAmountOutMin: minimum token to receive (e.g. CAKE) in the intermediary swap (e.g. BUSD --> CAKE)
+     * @param _tokenAmountOutMin: minimum token to receive (e.g. XALO) in the intermediary swap (e.g. BUSD --> XALO)
      */
     function zapOutToken(
         address _lpToken,
@@ -349,11 +349,11 @@ contract KalosZapV1 is Ownable, ReentrancyGuard {
         if (token0 == _tokenToZap) {
             swapTokenOut = token1;
             swapAmountIn = _calculateAmountToSwap(_tokenAmountIn, reserveA, reserveB);
-            swapAmountOut = pancakeRouter.getAmountOut(swapAmountIn, reserveA, reserveB);
+            swapAmountOut = kalosRouter.getAmountOut(swapAmountIn, reserveA, reserveB);
         } else {
             swapTokenOut = token0;
             swapAmountIn = _calculateAmountToSwap(_tokenAmountIn, reserveB, reserveA);
-            swapAmountOut = pancakeRouter.getAmountOut(swapAmountIn, reserveB, reserveA);
+            swapAmountOut = kalosRouter.getAmountOut(swapAmountIn, reserveB, reserveA);
         }
 
         return (swapAmountIn, swapAmountOut, swapTokenOut);
@@ -414,9 +414,9 @@ contract KalosZapV1 is Ownable, ReentrancyGuard {
 
             // Calculate the amount expected to be received in the intermediary swap
             if (sellToken0) {
-                swapAmountOut = pancakeRouter.getAmountOut(swapAmountIn, reserveA, reserveB);
+                swapAmountOut = kalosRouter.getAmountOut(swapAmountIn, reserveA, reserveB);
             } else {
-                swapAmountOut = pancakeRouter.getAmountOut(swapAmountIn, reserveB, reserveA);
+                swapAmountOut = kalosRouter.getAmountOut(swapAmountIn, reserveB, reserveA);
             }
         } else {
             sellToken0 = (_token0AmountIn * reserveA > _token1AmountIn * reserveB) ? true : false;
@@ -431,9 +431,9 @@ contract KalosZapV1 is Ownable, ReentrancyGuard {
 
             // Calculate the amount expected to be received in the intermediary swap
             if (sellToken0) {
-                swapAmountOut = pancakeRouter.getAmountOut(swapAmountIn, reserveB, reserveA);
+                swapAmountOut = kalosRouter.getAmountOut(swapAmountIn, reserveB, reserveA);
             } else {
-                swapAmountOut = pancakeRouter.getAmountOut(swapAmountIn, reserveA, reserveB);
+                swapAmountOut = kalosRouter.getAmountOut(swapAmountIn, reserveA, reserveB);
             }
         }
 
@@ -476,7 +476,7 @@ contract KalosZapV1 is Ownable, ReentrancyGuard {
             uint256 tokenAmountIn = (_lpTokenAmount * reserveA) / IKalosPair(_lpToken).totalSupply();
 
             swapAmountIn = _calculateAmountToSwap(tokenAmountIn, reserveA, reserveB);
-            swapAmountOut = pancakeRouter.getAmountOut(swapAmountIn, reserveA, reserveB);
+            swapAmountOut = kalosRouter.getAmountOut(swapAmountIn, reserveA, reserveB);
 
             swapTokenOut = token0;
         } else {
@@ -484,7 +484,7 @@ contract KalosZapV1 is Ownable, ReentrancyGuard {
             uint256 tokenAmountIn = (_lpTokenAmount * reserveB) / IKalosPair(_lpToken).totalSupply();
 
             swapAmountIn = _calculateAmountToSwap(tokenAmountIn, reserveB, reserveA);
-            swapAmountOut = pancakeRouter.getAmountOut(swapAmountIn, reserveB, reserveA);
+            swapAmountOut = kalosRouter.getAmountOut(swapAmountIn, reserveB, reserveA);
 
             swapTokenOut = token1;
         }
@@ -539,7 +539,7 @@ contract KalosZapV1 is Ownable, ReentrancyGuard {
         // Approve token to zap if necessary
         _approveTokenIfNeeded(_tokenToZap);
 
-        uint256[] memory swapedAmounts = pancakeRouter.swapExactTokensForTokens(
+        uint256[] memory swapedAmounts = kalosRouter.swapExactTokensForTokens(
             swapAmountIn,
             _tokenAmountOutMin,
             path,
@@ -555,7 +555,7 @@ contract KalosZapV1 is Ownable, ReentrancyGuard {
         }
 
         // Add liquidity and retrieve the amount of LP received by the sender
-        (, , lpTokenReceived) = pancakeRouter.addLiquidity(
+        (, , lpTokenReceived) = kalosRouter.addLiquidity(
             path[0],
             path[1],
             _tokenAmountIn - swapedAmounts[0],
@@ -648,7 +648,7 @@ contract KalosZapV1 is Ownable, ReentrancyGuard {
         }
 
         // Execute the swap and retrieve quantity received
-        uint256[] memory swapedAmounts = pancakeRouter.swapExactTokensForTokens(
+        uint256[] memory swapedAmounts = kalosRouter.swapExactTokensForTokens(
             swapAmountIn,
             _tokenAmountOutMin,
             path,
@@ -660,7 +660,7 @@ contract KalosZapV1 is Ownable, ReentrancyGuard {
         if (_isToken0Sold) {
             _approveTokenIfNeeded(_token1ToZap);
 
-            (, , lpTokenReceived) = pancakeRouter.addLiquidity(
+            (, , lpTokenReceived) = kalosRouter.addLiquidity(
                 path[0],
                 path[1],
                 (_token0AmountIn - swapedAmounts[0]),
@@ -672,7 +672,7 @@ contract KalosZapV1 is Ownable, ReentrancyGuard {
             );
         } else {
             _approveTokenIfNeeded(_token0ToZap);
-            (, , lpTokenReceived) = pancakeRouter.addLiquidity(
+            (, , lpTokenReceived) = kalosRouter.addLiquidity(
                 path[0],
                 path[1],
                 (_token1AmountIn - swapedAmounts[0]),
@@ -729,7 +729,7 @@ contract KalosZapV1 is Ownable, ReentrancyGuard {
         }
 
         // Swap tokens
-        pancakeRouter.swapExactTokensForTokens(swapAmountIn, _tokenAmountOutMin, path, address(this), block.timestamp);
+        kalosRouter.swapExactTokensForTokens(swapAmountIn, _tokenAmountOutMin, path, address(this), block.timestamp);
 
         // Return full balance for the token to receive by the sender
         return IERC20(_tokenToReceive).balanceOf(address(this));
@@ -740,9 +740,9 @@ contract KalosZapV1 is Ownable, ReentrancyGuard {
      * @param _token: token address
      */
     function _approveTokenIfNeeded(address _token) private {
-        if (IERC20(_token).allowance(address(this), pancakeRouterAddress) < 1e24) {
+        if (IERC20(_token).allowance(address(this), kalosRouterAddress) < 1e24) {
             // Re-approve
-            IERC20(_token).safeApprove(pancakeRouterAddress, MAX_INT);
+            IERC20(_token).safeApprove(kalosRouterAddress, MAX_INT);
         }
     }
 
@@ -759,8 +759,8 @@ contract KalosZapV1 is Ownable, ReentrancyGuard {
         uint256 _reserve1
     ) private view returns (uint256 amountToSwap) {
         uint256 halfToken0Amount = _token0AmountIn / 2;
-        uint256 nominator = pancakeRouter.getAmountOut(halfToken0Amount, _reserve0, _reserve1);
-        uint256 denominator = pancakeRouter.quote(
+        uint256 nominator = kalosRouter.getAmountOut(halfToken0Amount, _reserve0, _reserve1);
+        uint256 denominator = kalosRouter.quote(
             halfToken0Amount,
             _reserve0 + halfToken0Amount,
             _reserve1 - nominator
@@ -796,8 +796,8 @@ contract KalosZapV1 is Ownable, ReentrancyGuard {
 
         if (sellToken0) {
             uint256 token0AmountToSell = (_token0AmountIn - (_token1AmountIn * _reserve0) / _reserve1) / 2;
-            uint256 nominator = pancakeRouter.getAmountOut(token0AmountToSell, _reserve0, _reserve1);
-            uint256 denominator = pancakeRouter.quote(
+            uint256 nominator = kalosRouter.getAmountOut(token0AmountToSell, _reserve0, _reserve1);
+            uint256 denominator = kalosRouter.quote(
                 token0AmountToSell,
                 _reserve0 + token0AmountToSell,
                 _reserve1 - nominator
@@ -815,9 +815,9 @@ contract KalosZapV1 is Ownable, ReentrancyGuard {
                 Babylonian.sqrt((token0AmountToSell * token0AmountToSell * nominator) / denominator);
         } else {
             uint256 token1AmountToSell = (_token1AmountIn - (_token0AmountIn * _reserve1) / _reserve0) / 2;
-            uint256 nominator = pancakeRouter.getAmountOut(token1AmountToSell, _reserve1, _reserve0);
+            uint256 nominator = kalosRouter.getAmountOut(token1AmountToSell, _reserve1, _reserve0);
 
-            uint256 denominator = pancakeRouter.quote(
+            uint256 denominator = kalosRouter.quote(
                 token1AmountToSell,
                 _reserve1 + token1AmountToSell,
                 _reserve0 - nominator
