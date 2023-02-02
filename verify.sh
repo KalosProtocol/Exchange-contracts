@@ -1,1 +1,1 @@
-npx hardhat verify --network goerli 
+npx hardhat verify --network testnet "0x14180EE2De5bfF3bA55950Fc705fcB5b0A499579" "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
