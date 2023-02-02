@@ -29,7 +29,7 @@ library KalosLibrary {
                         hex"ff",
                         factory,
                         keccak256(abi.encodePacked(token0, token1)),
-                        hex"94655e29d8b0b0f8b6c054b61f1aa61d3a6cbf666e41e60a337c8fac5c34dd22" // init code hash to update !!
+                        hex"9d69e8b558718d746c8e562f701ccdf41818502e166b449b0bc371a3e2b18b01" // init code hash to update !!
                     )
                 )
             )

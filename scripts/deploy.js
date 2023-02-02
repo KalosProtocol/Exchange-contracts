@@ -21,29 +21,29 @@ async function main() {
   await kalosERC20.deployed();
   console.log("KalosERC20 Contract deployed to:", kalosERC20.address);
 
-  const KalosFactory = await hre.ethers.getContractFactory("KalosFactory");
-  const kalosFactory = await KalosFactory.deploy(deployer.address);
+  // const KalosFactory = await hre.ethers.getContractFactory("KalosFactory");
+  // const kalosFactory = await KalosFactory.deploy(deployer.address);
 
-  await kalosFactory.deployed();
-  console.log("KalosFactory Contract deployed to:", kalosFactory.address);
+  // await kalosFactory.deployed();
+  // console.log("KalosFactory Contract deployed to:", kalosFactory.address);
 
-  const WBNB = await hre.ethers.getContractFactory("WBNB");
-  const wBNB = await WBNB.deploy();
+  // const WBNB = await hre.ethers.getContractFactory("WBNB");
+  // const wBNB = await WBNB.deploy();
 
-  await wBNB.deployed();
-  console.log("WBNB Contract deployed to:", wBNB.address);
+  // await wBNB.deployed();
+  // console.log("WBNB Contract deployed to:", wBNB.address);
 
-  const KalosRouter = await hre.ethers.getContractFactory("KalosRouter");
-  const kalosRouter = await KalosRouter.deploy(kalosFactory.address, wBNB.address);
+  // const KalosRouter = await hre.ethers.getContractFactory("KalosRouter");
+  // const kalosRouter = await KalosRouter.deploy(kalosFactory.address, wBNB.address);
 
-  await kalosRouter.deployed();
-  console.log("KalosRouter Contract deployed to:", kalosRouter.address);
+  // await kalosRouter.deployed();
+  // console.log("KalosRouter Contract deployed to:", kalosRouter.address);
 
-  console.log(deployer.address, '--deployerAddress');
-  console.log(kalosERC20.address, '--KalosERC20');
-  console.log(kalosFactory.address, '--KalosFactory');
-  console.log(wBNB.address, '--WBNB');
-  console.log(kalosRouter.address, '--KalosRouter');
+  // console.log(deployer.address, '--deployerAddress');
+  // console.log(kalosERC20.address, '--KalosERC20');
+  // console.log(kalosFactory.address, '--KalosFactory');
+  // console.log(wBNB.address, '--WBNB');
+  // console.log(kalosRouter.address, '--KalosRouter');
 }
 
 // We recommend this pattern to be able to use async/await everywhere
